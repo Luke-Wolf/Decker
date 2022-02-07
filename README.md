@@ -1,2 +1,2 @@
 # Decker
-A Mod Manager written in Rust Primarily Targeting Linux
+A Mod Manager Written in Rust Primarily Targeting Linux

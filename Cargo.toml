@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "src/bin/decker-cli",
+    "src/bin/decker-qml",
+    "src/lib/decker-lib",
+    "src/games/openmw",
+]
