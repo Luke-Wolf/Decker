@@ -1,6 +1,7 @@
+use decker_lib::*;
 use std::path::PathBuf;
 
-use clap::{ArgEnum, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[clap(author,version,about,long_about = None)]
@@ -62,13 +63,6 @@ enum SubCommands {
     },
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-enum Games {
-    OpenMW,
-}
-
-#[derive(Subcommand)]
-enum ModCommands {}
 fn main() {
     let cli = Cli::parse();
 }

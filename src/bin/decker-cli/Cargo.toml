@@ -6,4 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+#Remote
 clap = { version="~3", features=["derive"] }
+
+
+#local
+decker-lib = {path="../../lib/decker-lib"}
