@@ -13,7 +13,9 @@ Point 3 is tricky, which is why most mod managers simply treat these modificatio
 
 Regardless of which kind of game modification, there will inevitably be conflicts with other mods. Luckily [LOOT](https://github.com/loot) exists for Bethesda games, however others will require manual intervention in the layering of the Union FS.
 
-If we wish to have mixed layers an additional conflict overlay can be added to force individual files to take precedence over other layers.
+If we wish to have mixed layers an additional conflict overlay can be added to force individual files to take precedence over other layers. 
+
+mount -t overlay overlay -olowerdir=/lower1:/lower2:/lower3 /merged
 
 # Decker Architecture
 
@@ -21,6 +23,6 @@ There are three layers to the Decker Mod Manager
 
 * The GUI layer which is self descriptive, available in both a CLI and a QML based interface
 
-* The Decker Engine which manages the mod repository (Download, Update, Delete, Enable, Disable), and performs Union FS operations. An sqlite db will be created per game to track
+* The Decker Engine which manages the mod repository (Download, Update, Delete, Enable, Disable), and performs Union FS operations. An sqlite db will be created per game to track the mod repository for each game as well as its location, and the game specific mod repository location.
 
 * The Game Tweak Layer which handles any behavior that is specific to a game or mod format.

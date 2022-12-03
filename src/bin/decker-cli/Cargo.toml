@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 #Remote
-clap = { version="~3", features=["derive"] }
+clap = { version="~4", features=["derive"] }
 
 
 #local
