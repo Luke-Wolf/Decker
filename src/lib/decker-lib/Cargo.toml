@@ -7,11 +7,8 @@ edition = "2021"
 
 [dependencies]
 # Remote
-clap = { version="4", features=["derive"] }
-serde_rusqlite = "0.31"
-serde = { version = "1", features = ["derive"] }
-rusqlite = "0.28"
 dirs = "4"
 anyhow = "~1"
+vfs = "0.8"
 
 # Local
