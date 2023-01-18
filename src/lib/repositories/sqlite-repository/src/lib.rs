@@ -76,19 +76,19 @@ impl SqliteGameRepository {
 }
 
 impl GameRepository for SqliteGameRepository {
-    fn add_game(&self, game: Box<Game>, path: &Path, mod_folder: &Path) -> Result<()> {
+    fn add_game(&self, game: &Box<Game>) -> Result<()> {
         if self.connection.execute(
             "INSERT OR IGNORE INTO
                 games (name, game_type, location, mod_folder) 
                 VALUES(?1, ?2, ?3, ?4);",
             (
                 &game.name,
-                match game.game_type {
+                match &game.game_type {
                     GameTypeOption::GameType(game_type) => game_type.name(),
-                    GameTypeOption::Name(name) => name,
+                    GameTypeOption::Name(name) => name.to_owned(),
                 },
-                path.to_str(),
-                mod_folder.to_str(),
+                game.location.to_str(),
+                game.mod_folder.to_str(),
             ),
         )? == 1
         {
@@ -98,7 +98,7 @@ impl GameRepository for SqliteGameRepository {
         }
     }
 
-    fn remove_game(&self, game: Box<Game>) -> Result<()> {
+    fn remove_game(&self, game: &Box<Game>) -> Result<()> {
         if self.connection.execute(
             "DELETE FROM games
                 WHERE name='?1';",
@@ -126,12 +126,12 @@ impl GameRepository for SqliteGameRepository {
         Ok(game_iter)
     }
 
-    fn update_game_location(&self, game: Box<Game>, path: &Path) -> Result<()> {
+    fn update_game_location(&self, game: &Box<Game>, path: &Path) -> Result<()> {
         if self.connection.execute(
             "UPDATE games
                   SET location = '?1'
                   WHERE name='?2'",
-            (path.to_str(), game.name),
+            (path.to_str(), &game.name),
         )? == 1
         {
             Ok(())
@@ -140,12 +140,12 @@ impl GameRepository for SqliteGameRepository {
         }
     }
 
-    fn update_mod_folder_location(&self, game: Box<Game>, path: &Path) -> Result<()> {
+    fn update_mod_folder_location(&self, game: &Box<Game>, path: &Path) -> Result<()> {
         if self.connection.execute(
             "UPDATE games
                   SET mod_folder = '?1'
                   WHERE name='?2'",
-            (path.to_str(), game.name),
+            (path.to_str(), &game.name),
         )? == 1
         {
             Ok(())
@@ -209,12 +209,12 @@ impl SqliteModRepository {
 }
 
 impl ModRepository for SqliteModRepository {
-    fn add_mod(&self, game: Box<Game>, game_mod: String, path: &Path) -> Result<()> {
+    fn add_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         if self.connection.execute(
             "INSERT OR IGNORE INTO
                 mods (game_name, name, location, enabled) 
                 VALUES(?1, ?2, ?3, 0);",
-            (&game.name, game_mod, path.to_str()),
+            (&game.name, &game_mod.name, &game_mod.location.to_str()),
         )? == 1
         {
             Ok(())
@@ -223,11 +223,11 @@ impl ModRepository for SqliteModRepository {
         }
     }
 
-    fn remove_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
+    fn remove_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         if self.connection.execute(
             "DELETE FROM mods
                 WHERE game_name='?1' AND name='?2';",
-            &[&game.name, &game_mod],
+            &[&game.name, &game_mod.name],
         )? == 1
         {
             Ok(())
@@ -236,12 +236,12 @@ impl ModRepository for SqliteModRepository {
         }
     }
 
-    fn enable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
+    fn enable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         if self.connection.execute(
             "UPDATE mods
                   SET enabled = 1
                   WHERE game_name='?1' AND name = '?2';",
-            (game.name, game_mod),
+            (&game.name, &game_mod.name),
         )? == 1
         {
             Ok(())
@@ -250,12 +250,12 @@ impl ModRepository for SqliteModRepository {
         }
     }
 
-    fn disable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
+    fn disable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         if self.connection.execute(
             "UPDATE mods
                   SET enabled = 0
                   WHERE game_name='?1' AND name = '?2';",
-            (game.name, game_mod),
+            (&game.name, &game_mod.name),
         )? == 1
         {
             Ok(())
@@ -264,11 +264,11 @@ impl ModRepository for SqliteModRepository {
         }
     }
 
-    fn available_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>> {
+    fn available_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>> {
         let mut stmt = self
             .connection
             .prepare("SELECT * from Mods where game_name = ?1;")?;
-        let game_iter = stmt.query_map([game.name], |row| {
+        let game_iter = stmt.query_map([&game.name], |row| {
             Ok(ModRepositoryRow {
                 _id: row.get(0)?,
                 _game_name: row.get(1)?,
@@ -283,11 +283,11 @@ impl ModRepository for SqliteModRepository {
         Ok(mod_iter)
     }
 
-    fn enabled_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>> {
+    fn enabled_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>> {
         let mut stmt = self
             .connection
-            .prepare("SELECT * from Mods where game_name = ?1 AND enabled = 1;")?;
-        let game_iter = stmt.query_map([game.name], |row| {
+            .prepare("SELECT * from Mods where game_name = ?1 AN, PathBufD enabled = 1;")?;
+        let game_iter = stmt.query_map([&game.name], |row| {
             Ok(ModRepositoryRow {
                 _id: row.get(0)?,
                 _game_name: row.get(1)?,

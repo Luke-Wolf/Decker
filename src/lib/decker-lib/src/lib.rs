@@ -64,63 +64,77 @@ impl Decker {
         })
     }
 
-    pub fn add_game(game: Box<Game>) -> Result<()> {
+    pub fn add_game(&self, game: &Box<Game>) -> Result<()> {
+        self.game_repository.add_game(&game)?;
+        self.filesystem_operation
+            .create_mod_folder(&game.mod_folder)?;
+        Ok(())
+    }
+
+    pub fn remove_game(&self, game: &Box<Game>) -> Result<()> {
+        self.game_repository.remove_game(&game)?;
+        self.filesystem_operation
+            .delete_mod_folder(&game.mod_folder)?;
+        Ok(())
+    }
+
+    pub fn available_games(&self) -> Result<Vec<Box<Game>>> {
         todo!()
     }
 
-    pub fn remove_game(game: Box<Game>) -> Result<()> {
+    pub fn update_game_location(&self, game: &Box<Game>, path: &Path) -> Result<()> {
         todo!()
     }
 
-    pub fn available_games() -> Result<Vec<Box<Game>>> {
+    pub fn update_mod_folder_location(&self, game: &Box<Game>, path: &Path) -> Result<()> {
         todo!()
     }
 
-    pub fn update_game_location(game: Box<Game>, path: &Path) -> Result<()> {
+    pub fn add_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
+        self.mod_repository.add_mod(&game, &game_mod)?;
+        self.filesystem_operation
+            .install_mod_to_mod_folder(&game_mod.location, &game.mod_folder)?;
+        Ok(())
+    }
+    pub fn remove_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
+        self.mod_repository.remove_mod(&game, &game_mod)
+    }
+    pub fn enable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         todo!()
     }
-
-    pub fn update_mod_folder_location(game: Box<Game>, path: &Path) -> Result<()> {
+    pub fn disable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()> {
         todo!()
     }
-
-    pub fn add_mod(game: Box<Game>, game_mod: Box<Mod>) -> Result<()> {
+    pub fn available_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>> {
         todo!()
     }
-    pub fn remove_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
-        todo!()
-    }
-    pub fn enable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
-        todo!()
-    }
-    pub fn disable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()> {
-        todo!()
-    }
-    pub fn available_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>> {
-        todo!()
-    }
-    pub fn enabled_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>> {
+    pub fn enabled_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>> {
         todo!()
     }
 }
 pub trait ModRepository {
-    fn add_mod(&self, game: Box<Game>, game_mod: String, path: &Path) -> Result<()>;
-    fn remove_mod(&self, game: Box<Game>, game_mod: String) -> Result<()>;
-    fn enable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()>;
-    fn disable_mod(&self, game: Box<Game>, game_mod: String) -> Result<()>;
-    fn available_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>>;
-    fn enabled_mods(&self, game: Box<Game>) -> Result<Vec<Box<Mod>>>;
+    fn add_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()>;
+    fn remove_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()>;
+    fn enable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()>;
+    fn disable_mod(&self, game: &Box<Game>, game_mod: &Box<Mod>) -> Result<()>;
+    fn available_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>>;
+    fn enabled_mods(&self, game: &Box<Game>) -> Result<Vec<Box<Mod>>>;
 }
 
 pub trait GameRepository {
-    fn add_game(&self, game: Box<Game>, path: &Path, mods_folder: &Path) -> Result<()>;
-    fn remove_game(&self, game: Box<Game>) -> Result<()>;
-    fn update_game_location(&self, game: Box<Game>, path: &Path) -> Result<()>;
-    fn update_mod_folder_location(&self, game: Box<Game>, path: &Path) -> Result<()>;
+    fn add_game(&self, game: &Box<Game>) -> Result<()>;
+    fn remove_game(&self, game: &Box<Game>) -> Result<()>;
+    fn update_game_location(&self, game: &Box<Game>, path: &Path) -> Result<()>;
+    fn update_mod_folder_location(&self, game: &Box<Game>, path: &Path) -> Result<()>;
     fn games(&self) -> Result<Vec<Box<Game>>>;
 }
 
 pub trait FileSystemOperation {
+    fn create_mod_folder(&self, path: &Path) -> Result<()>;
+    fn delete_mod_folder(&self, path: &Path) -> Result<()>;
+    fn install_mod_to_mod_folder(&self, mod_path: &Path, mod_folder_path: &Path) -> Result<()>;
+    fn remove_mod_from_mod_folder(&self, game_mod: &Mod, mod_folder_path: &Path) -> Result<()>;
+
     fn enable_mods(&self, mod_paths: Vec<&Path>, target_path: &Path) -> Result<()>;
     fn disable_mods(&self, mod_paths: Vec<&Path>, target_path: &Path) -> Result<()>;
 }
