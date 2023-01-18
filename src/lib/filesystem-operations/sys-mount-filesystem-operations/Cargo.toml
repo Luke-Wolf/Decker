@@ -1,0 +1,13 @@
+[package]
+name = "sys-mount-filesystem-operations"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#remote
+#sys-mount = {version="2", default-features = false}
+anyhow = "~1"
+#local
+decker-lib = {path="../../decker-lib/"}
