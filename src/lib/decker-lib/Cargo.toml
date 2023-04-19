@@ -9,6 +9,6 @@ edition = "2021"
 # Remote
 dirs = "4"
 anyhow = "~1"
-vfs = "0.8"
+
 
 # Local

@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 struct OpenMW {}
 
 impl GameType for OpenMW {
@@ -28,6 +29,7 @@ impl GameType for OpenMW {
     }
 }
 
+#[derive(Debug)]
 struct Gamebryo {}
 
 impl GameType for Gamebryo {
@@ -56,6 +58,7 @@ impl GameType for Gamebryo {
     }
 }
 
+#[derive(Debug)]
 struct LooseFiles {}
 
 impl GameType for LooseFiles {

@@ -15,7 +15,13 @@ mod tests {
     }
 }
 
-struct SysMountFileSystemOperations {}
+pub struct SysMountFileSystemOperations {}
+
+impl SysMountFileSystemOperations {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl FileSystemOperation for SysMountFileSystemOperations {
     fn create_mod_folder(&self, path: &std::path::Path) -> anyhow::Result<()> {

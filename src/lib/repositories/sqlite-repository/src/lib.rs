@@ -98,6 +98,29 @@ impl GameRepository for SqliteGameRepository {
         }
     }
 
+    fn get_game(&self, game_name: &str) -> Result<Option<Box<Game>>> {
+        let mut stmt = self
+            .connection
+            .prepare_cached("SELECT * FROM Games WHERE name = ?1;")?;
+        let game_iter = stmt.query_map([game_name], |row| {
+            Ok(GameRow {
+                _id: row.get(0)?,
+                game: row.get(1)?,
+                game_type: row.get(2)?,
+                location: row.get(3)?,
+                mod_folder: row.get(4)?,
+            })
+        })?;
+        let result = game_iter.fold(Ok(None), |_, row| {
+            if let Ok(game) = row {
+                Ok(Some(Box::new(game.into())))
+            } else {
+                Ok(None)
+            }
+        });
+        result
+    }
+
     fn remove_game(&self, game: &Box<Game>) -> Result<()> {
         if self.connection.execute(
             "DELETE FROM games
@@ -199,7 +222,7 @@ impl SqliteModRepository {
                     description TEXT,
                     url TEXT,                    
                     location TEXT NOT NULL,
-                    enabled INTEGER NOT NULL,                    
+                    enabled INTEGER NOT NULL                    
                 );",
             (),
         )?;
@@ -304,16 +327,120 @@ impl ModRepository for SqliteModRepository {
 }
 
 #[cfg(test)]
-mod tests {
+mod game_tests {
     use super::*;
 
     use anyhow::Result;
     use rusqlite::Connection;
 
-    #[test]
-    fn create_tables() -> Result<()> {
+    fn create_game_repo() -> Result<SqliteGameRepository> {
         let connection = Connection::open_in_memory()?;
+        SqliteGameRepository::new(connection)
+    }
 
+    #[test]
+    fn create_game_tables() -> Result<()> {
+        create_game_repo()?;
+        Ok(())
+    }
+
+    #[test]
+    fn add_game() -> Result<()> {
+        let game_repo = create_game_repo()?;
+        let game = Box::new(Game {
+            name: "OpenMW".into(),
+            location: "/games/openMW".into(),
+            game_type: GameTypeOption::Name("OpenMW".into()),
+            mod_folder: "/mods/openMW".into(),
+        });
+        let size = game_repo.games()?.len();
+        game_repo.add_game(&game)?;
+        assert_eq!(size + 1, game_repo.games()?.len());
+
+        if let Some(retrieved_game) = game_repo.get_game("OpenMW")? {
+            assert_eq!(retrieved_game, game);
+        } else {
+            panic!("could not get game from repo");
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn remove_game() -> Result<()> {
+        let game_repo = create_game_repo()?;
+        let game = Box::new(Game {
+            name: "OpenMW".into(),
+            location: "/games/openMW".into(),
+            game_type: GameTypeOption::Name("OpenMW".into()),
+            mod_folder: "/mods/openMW".into(),
+        });
+        game_repo.add_game(&game)?;
+
+        if let Some(retrieved_game) = game_repo.get_game("OpenMW")? {
+            assert_eq!(retrieved_game, game)
+        } else {
+            panic!("could not get game from repo")
+        }
+        game_repo.remove_game(&game)?;
+        if !game_repo.get_game("OpenMW")?.is_none() {
+            panic!("game not removed from repo")
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn get_game() -> Result<()> {
+        let game_repo = create_game_repo()?;
+        let game = Box::new(Game {
+            name: "OpenMW".into(),
+            location: "/games/openMW".into(),
+            game_type: GameTypeOption::Name("OpenMW".into()),
+            mod_folder: "/mods/openMW".into(),
+        });
+        let size = game_repo.games()?.len();
+        game_repo.add_game(&game)?;
+        assert_eq!(size + 1, game_repo.games()?.len());
+
+        if let Some(retrieved_game) = game_repo.get_game("OpenMW")? {
+            assert_eq!(retrieved_game, game);
+        } else {
+            panic!("could not get game from repo");
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn get_games() -> Result<()> {
+        todo!()
+    }
+
+    #[test]
+    fn update_game_location() -> Result<()> {
+        todo!()
+    }
+
+    #[test]
+    fn update_mod_folder_location() -> Result<()> {
+        todo!()
+    }
+}
+
+#[cfg(test)]
+mod mod_tests {
+    use super::*;
+
+    use anyhow::Result;
+    use rusqlite::Connection;
+
+    fn create_mod_repo() -> Result<SqliteModRepository> {
+        let connection = Connection::open_in_memory()?;
+        SqliteModRepository::new(connection)
+    }
+
+    #[test]
+    fn create_mod_tables() -> Result<()> {
+        create_mod_repo()?;
         Ok(())
     }
 }

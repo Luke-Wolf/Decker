@@ -1,7 +1,11 @@
 use decker_lib::*;
+use rusqlite::Connection;
+use sqlite_repository::{SqliteGameRepository, SqliteModRepository};
+use sys_mount_filesystem_operations::SysMountFileSystemOperations;
 
 use std::{
     fmt::{self, Display},
+    fs,
     path::PathBuf,
 };
 
@@ -85,30 +89,59 @@ enum SubCommands {
 
 fn main() {
     let cli = Cli::parse();
+    let mut decker_path = dirs::home_dir().unwrap();
+    decker_path.push(".decker");
+    fs::create_dir_all(&decker_path).unwrap();
+    decker_path.push("decker.sqlite");
 
-    // let path = if let Some(mut path) = dirs::home_dir() {
-    //     path.push(".decker");
+    let sqlite_connection = Connection::open(&decker_path).unwrap();
+    let game_repository = Box::new(SqliteGameRepository::new(sqlite_connection).unwrap());
 
-    //     // Ensure that the path exists
-    //     fs::create_dir_all(&path)?;
+    let sqlite_connection = Connection::open(&decker_path).unwrap();
+    let mod_repository = Box::new(SqliteModRepository::new(sqlite_connection).unwrap());
 
-    //     path.push("decker.db");
-    //     path
-    // } else {
-    //     //dump the file in the current directory
-    //     let mut path = PathBuf::new();
-    //     path.push("decker.db");
-    //     path
-    // };
-    // let connection = Connection::open(path)?;
+    let filesystem_operation = Box::new(SysMountFileSystemOperations::new());
 
-    // let decker = Decker::new();
-    // match decker {
-    //     Ok(decker) => {
-    //         println!("Got Decker");
-    //     }
-    //     Err(e) => {
-    //         println!("Got Error {e:?}");
-    //     }
-    // }
+    let decker = Decker::new(game_repository, mod_repository, filesystem_operation).unwrap();
+
+    match cli.command {
+        Commands::Add { command } => match command {
+            AddCommands::Game { name, path } => {
+                let game = Box::new(Game {
+                    name: "OpenMW".into(),
+                    location: path,
+                    game_type: GameTypeOption::Name("OpenMW".into()),
+                    mod_folder: "~/Decker/Mods/OpenMW".into(),
+                });
+                decker.add_game(&game);
+            }
+            AddCommands::Mod {
+                game,
+                game_mod,
+                path,
+            } => todo!(),
+        },
+        Commands::Remove { command } => match command {
+            SubCommands::Game { name } => {                
+                let game = Box::new(Game {
+                    name: "OpenMW".into(),
+                    location: "".into(),
+                    game_type: GameTypeOption::Name("OpenMW".into()),
+                    mod_folder: "~/Decker/Mods/OpenMW".into(),
+                });
+                decker.remove_game(&game);
+            }
+            SubCommands::Mod { game, game_mod } => todo!(),
+        },
+        Commands::Disable { command } => match command {
+            SubCommands::Game { name } => {
+                todo!()
+            }
+            SubCommands::Mod { game, game_mod } => todo!(),
+        },
+        Commands::Enable { command } => match command {
+            SubCommands::Game { name } => todo!(),
+            SubCommands::Mod { game, game_mod } => todo!(),
+        },
+    }
 }

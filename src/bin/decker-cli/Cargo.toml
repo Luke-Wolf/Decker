@@ -8,6 +8,10 @@ edition = "2021"
 [dependencies]
 #Remote
 clap = { version="~4", features=["derive"] }
+rusqlite = "0.28"
+dirs = "4"
 
 #local
 decker-lib = {path="../../lib/decker-lib"}
+sys-mount-filesystem-operations = {path="../../lib/filesystem-operations/sys-mount-filesystem-operations"}
+sqlite-repository = {path="../../lib/repositories/sqlite-repository"}

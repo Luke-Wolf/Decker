@@ -1,6 +1,9 @@
 mod games;
 
-use std::path::{Path, PathBuf};
+use std::{
+    fmt::Debug,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Result;
 
@@ -15,6 +18,7 @@ mod tests {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Game {
     pub name: String,
     pub location: PathBuf,
@@ -31,9 +35,32 @@ pub trait GameType {
     fn deactivate_mods(&self) -> Result<()>;
 }
 
+impl PartialEq for Box<dyn GameType> {
+    fn eq(&self, other: &Self) -> bool {
+        self.name() == other.name()
+    }
+}
+
+impl Debug for Box<dyn GameType> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Box").field(&self.name()).finish()
+    }
+}
+
+#[derive(Debug)]
 pub enum GameTypeOption {
     Name(String),
     GameType(Box<dyn GameType>),
+}
+
+impl PartialEq for GameTypeOption {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Name(l0), Self::Name(r0)) => l0 == r0,
+            (Self::GameType(l0), Self::GameType(r0)) => l0 == r0,
+            _ => false,
+        }
+    }
 }
 
 pub struct Mod {
@@ -76,6 +103,10 @@ impl Decker {
         self.filesystem_operation
             .delete_mod_folder(&game.mod_folder)?;
         Ok(())
+    }
+
+    pub fn get_game(&self, game_name: &str) -> Option<Game> {
+        todo!()
     }
 
     pub fn available_games(&self) -> Result<Vec<Box<Game>>> {
@@ -124,6 +155,7 @@ pub trait ModRepository {
 pub trait GameRepository {
     fn add_game(&self, game: &Box<Game>) -> Result<()>;
     fn remove_game(&self, game: &Box<Game>) -> Result<()>;
+    fn get_game(&self, game_name: &str) -> Result<Option<Box<Game>>>;
     fn update_game_location(&self, game: &Box<Game>, path: &Path) -> Result<()>;
     fn update_mod_folder_location(&self, game: &Box<Game>, path: &Path) -> Result<()>;
     fn games(&self) -> Result<Vec<Box<Game>>>;

@@ -10,7 +10,7 @@ mod tests {
     fn it_works() {}
 }
 
-struct VFSFileOperations {}
+pub struct VFSFileOperations {}
 
 impl FileSystemOperation for VFSFileOperations {
     fn create_mod_folder(&self, path: &std::path::Path) -> Result<()> {

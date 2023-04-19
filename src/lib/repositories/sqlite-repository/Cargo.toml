@@ -10,6 +10,5 @@ edition = "2021"
 decker-lib = {path="../../decker-lib"}
 # Remote
 rusqlite = "0.28"
-dirs = "4"
 anyhow = "~1"
 thiserror = "~1"

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 #remote
-#sys-mount = {version="2", default-features = false}
+sys-mount = "2"
 anyhow = "~1"
 #local
 decker-lib = {path="../../decker-lib/"}
